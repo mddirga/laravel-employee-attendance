@@ -10,9 +10,9 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Humaidem\FilamentMapPicker\Fields\OSMMap;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Humaidem\FilamentMapPicker\Fields\OSMMap;
 
 class OfficeResource extends Resource
 {
@@ -31,51 +31,50 @@ class OfficeResource extends Resource
                         Forms\Components\Section::make()
                             ->schema([
                                 Forms\Components\TextInput::make('name')
-                                    ->required()
-                                    ->maxLength(255),
-                                OSMMap::make('location')
-                                    ->label('Location')
-                                    ->showMarker()
-                                    ->draggable()
-                                    ->extraControl([
-                                        'zoomDelta'           => 1,
-                                        'zoomSnap'            => 0.25,
-                                        'wheelPxPerZoomLevel' => 60
-                                    ])
-                                    ->afterStateHydrated(function (Forms\Get $get, Forms\Set $set, $record) {
-                                        $latitude = $record->latitude;
-                                        $longitude = $record->longitude;
-
-                                        if ($latitude && $longitude) {
-                                            $set('location', ['lat' => $latitude, 'lng' => $longitude]);
-                                        }
-                                    })
-                                    ->afterStateUpdated(function ($state, Forms\Get $get, Forms\Set $set) {
-                                        $set('latitude', $state('lat'));
-                                        $set('longitude', $state('lng'));
-                                    })
-                                    ->tilesUrl('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'),
-                                Forms\Components\Group::make()
-                                    ->schema([
-                                        Forms\Components\TextInput::make('latitude')
-                                            ->required()
-                                            ->numeric(),
-                                        Forms\Components\TextInput::make('longitude')
-                                            ->required()
-                                            ->numeric(),
-                                    ])->columns(2),
+                                ->required()
+                                ->maxLength(255),
+                        OSMMap::make('location')
+                            ->label('Location')
+                            ->showMarker()
+                            ->draggable()
+                            ->extraControl([
+                                'zoomDelta'           => 1,
+                                'zoomSnap'            => 0.25,
+                                'wheelPxPerZoomLevel' => 60
                             ])
-                        
-                        ]),
-                Forms\Components\Group::make()
-                    ->schema([
-                        Forms\Components\Section::make()
+                            ->afterStateHydrated(function (Forms\Get $get, Forms\Set $set, $record){
+                                $latitude = $record-> latitude;
+                                $longitude = $record-> longitude;
+
+                                if($latitude && $longitude){
+                                    $set('location', ['lat' => $latitude, 'lng' => $longitude]);
+                                }
+                            })
+                            ->afterStateUpdated(function ($state, Forms\Get $get, Forms\Set $set){
+                                $set('latitude', $state['lat']);
+                                $set('longitude', $state['lng']);
+                            })
+                            ->tilesUrl('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'),
+                        Forms\Components\Group::make()
                             ->schema([
-                                Forms\Components\TextInput::make('radius')
+                                Forms\Components\TextInput::make('latitude')
                                     ->required()
                                     ->numeric(),
-                            ]),
-                    ])
+                                Forms\Components\TextInput::make('longitude')
+                                    ->required()
+                                    ->numeric(),
+                            ])->columns(2),
+                        ])
+                ]),
+            Forms\Components\Group::make()
+                ->schema([
+                    Forms\Components\Section::make()
+                        ->schema([
+                            Forms\Components\TextInput::make('radius')
+                            ->required()
+                            ->numeric(),
+                        ]), 
+                ]),               
             ]);
     }
 
@@ -86,8 +85,10 @@ class OfficeResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('latitude')
+                    ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('longitude')
+                    ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
